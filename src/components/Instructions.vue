@@ -15,7 +15,8 @@ const lockCursor = () => {
   <div :class="{ locked: !paused }" class="holder-wrapper">
     <InterfaceHolder @click="lockCursor">
       <h2>Contrôles/Controls</h2>
-      <p>1 - 9 : Camera</p>
+      <p>W A S D + Souris : Mouvement</p>
+      <p>Clique Gauche : Interaction</p>
       <br />
       <p>Appuyer sur une touche pour commencer / Press any key to start</p>
     </InterfaceHolder>

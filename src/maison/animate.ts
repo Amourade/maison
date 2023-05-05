@@ -12,6 +12,8 @@ export const animate = () => {
 
   requestAnimationFrame(animate)
 
+  console.log(app.SCENE.camera.position)
+
   if (app.CONTROLS.isLocked === true) {
     app.SCENE.paused.value = false
     animateControls()

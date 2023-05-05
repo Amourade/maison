@@ -30,8 +30,9 @@ export const init = () => {
     window.innerWidth / window.innerHeight,
     0.01,
     3000,
-    new THREE.Vector3(20, 200, 20)
+    new THREE.Vector3(-299, 10.5, -868)
   )
+  camera.lookAt(new THREE.Vector3(0, 0, 0))
   scene.add(camera)
 
   //Audio Listerner
