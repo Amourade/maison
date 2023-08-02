@@ -5,6 +5,7 @@ import InterfaceHolder from './InterfaceHolder.vue'
 import { maisonApp } from '@/maison'
 
 const show = ref(true)
+const fadeLoading = ref(false)
 
 const loadingPercent: Ref<number> = maisonApp.LOADING_PERCENT
 const loaded: Ref<boolean> = maisonApp.LOADED
@@ -12,12 +13,15 @@ const loaded: Ref<boolean> = maisonApp.LOADED
 watch(loaded, (value) => {
   if (value)
     setTimeout(() => {
-      show.value = false
-    }, 2000)
+      fadeLoading.value = true
+      setTimeout(() => {
+        show.value = false
+      }, 2000)
+    }, 1)
 })
 </script>
 <template>
-  <div v-if="show" class="wrapper" :class="{ done: loaded }">
+  <div v-if="show" class="wrapper" :class="{ done: fadeLoading }">
     <div class="loader">
       <InterfaceHolder>{{ loadingPercent }}% Loaded</InterfaceHolder>
     </div>

@@ -30,13 +30,11 @@ export const init = () => {
         break
 
       case 'KeyE': //E
-        /* if (!app.SCENE.paused && window.interactions.INTERSECTED) {
-          if (!window.scene.lockedOn) {
-            window.interactions.INTERSECTED.interact(event)
-          } else {
-            window.interactions.lockedOn = undefined
-          }
-        } */
+        app.SCENE.camera?.dropFlower()
+        break
+
+      case 'KeyQ': //Q
+        app.SCENE.camera?.dropPainting()
         break
     }
   }
@@ -77,6 +75,8 @@ export const init = () => {
 const onResize = () => {
   app.SCENE.HEIGHT = window.innerHeight
   app.SCENE.WIDTH = window.innerWidth
+
+  if (!app.SCENE.camera) return
 
   app.SCENE.camera.aspect = window.innerWidth / window.innerHeight
   app.SCENE.camera.updateProjectionMatrix()

@@ -5,6 +5,7 @@ import { Link } from './link'
 import openSound from '@/maison/assets/sounds/house/open.mp3'
 import closeSound from '@/maison/assets/sounds/house/close.mp3'
 import { parseSounds } from '@/maison/scripts/parseAssets'
+import type { DoorObject, Dimensions } from '@/maison/types'
 
 const sounds = {
   open: openSound,
@@ -17,7 +18,7 @@ export class Doors extends Link {
   leftDoor!: LeftDoor
   rightDoor!: RightDoor
   sounds!: { open: THREE.PositionalAudio; close: THREE.PositionalAudio }
-  state: string = 'closed'
+  state: string = 'close'
 
   constructor(door: DoorObject, wallOffset: number, dimensions: Dimensions) {
     super()
@@ -34,12 +35,12 @@ export class Doors extends Link {
     }
 
     this.sounds.open.setBuffer(parsedSounds.open!)
-    this.sounds.open.setRefDistance(40)
+    this.sounds.open.setRefDistance(20)
     this.sounds.open.loop = false
     this.add(this.sounds.open)
 
     this.sounds.close.setBuffer(parsedSounds.close!)
-    this.sounds.close.setRefDistance(40)
+    this.sounds.close.setRefDistance(20)
     this.sounds.close.loop = false
     this.add(this.sounds.close)
 
@@ -53,17 +54,21 @@ export class Doors extends Link {
   }
 
   interact = () => {
-    this.state === 'closed' ? this.open() : this.close()
+    this.state === 'close' ? this.open() : this.close()
   }
 
   close = () => {
+    this.sounds.close.stop()
+    this.sounds.open.stop()
     this.leftDoor.close()
     this.rightDoor.close()
     this.sounds.close.play()
-    this.state = 'closed'
+    this.state = 'close'
   }
 
   open = () => {
+    this.sounds.close.stop()
+    this.sounds.open.stop()
     this.leftDoor.open()
     this.rightDoor.open()
     this.sounds.open.play()

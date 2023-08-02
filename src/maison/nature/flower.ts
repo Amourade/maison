@@ -52,19 +52,19 @@ export class Flower extends FlowerActor {
 
     this.sounds.fall = new THREE.PositionalAudio(app.SCENE.listener)
     this.sounds.fall.setBuffer(parsedSounds.fall)
-    this.sounds.fall.setRefDistance(75)
+    this.sounds.fall.setRefDistance(20)
     this.sounds.fall.loop = false
     this.add(this.sounds.fall)
 
     this.sounds.pluck = new THREE.PositionalAudio(app.SCENE.listener)
     this.sounds.pluck.setBuffer(parsedSounds.pluck)
-    this.sounds.pluck.setRefDistance(75)
+    this.sounds.pluck.setRefDistance(20)
     this.sounds.pluck.loop = false
     this.add(this.sounds.pluck)
 
     this.sounds.plant = new THREE.PositionalAudio(app.SCENE.listener)
     this.sounds.plant.setBuffer(parsedSounds.plant)
-    this.sounds.plant.setRefDistance(75)
+    this.sounds.plant.setRefDistance(20)
     this.sounds.plant.loop = false
     this.sounds.plant.setVolume(1)
     this.add(this.sounds.plant)

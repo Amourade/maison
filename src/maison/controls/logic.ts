@@ -10,33 +10,13 @@ export const animate = () => {
 
   checkInteractions()
   makeMovement()
-
-  /**
-   * If page isn't paused
-   */
-
-  //if (!app.SCENE.paused) {
-  /**
-   * Update Helpers if Debug is on
-   */
-  /*  if (window.scene.debug === true) {
-      updateHelpers()
-    } */
-  /* 
-    for (let i = 0; i < window.interactions.interactive.length; i++) {
-      if (window.interactions.interactive[i].animate != null) {
-        window.interactions.interactive[i].animate()
-      }
-    } */
-  //}
 }
 
 export const onMouseClick = (e: MouseEvent) => {
   e.preventDefault()
 
   if (app.CONTROLS.isLocked && app.INTERACTIONS.INTERSECTED.value) {
-    app.INTERACTIONS.INTERSECTED.value.interact()
-    //app.INTERACTIONS.INTERSECTED
+    app.SCENE.camera?.interact()
   }
 
   return false
@@ -58,8 +38,12 @@ function checkInteractions() {
   const interactionRay = app.INTERACTIONS.ray
   const mouse = app.SCENE.mouse
   const camera = app.SCENE.camera
-  const interactiveObjects = app.INTERACTIONS.interactives
+  const interactiveObjects = app.INTERACTIONS.interactives.filter(
+    (interactive) => !interactive.held
+  )
   let intersected
+
+  if (!camera) return
 
   interactionRay.setFromCamera(mouse, camera)
   const intersects = []
@@ -109,6 +93,9 @@ function checkInteractions() {
   app.INTERACTIONS.INTERSECTED.value = intersected
 }
 
+const stepThreshold = 0.5
+let currentStepCounts = 0
+
 function makeMovement() {
   const velocity = app.MOVEMENT.velocity
   const delta = app.SCENE.delta
@@ -125,11 +112,15 @@ function makeMovement() {
   const direction = app.MOVEMENT.direction
   const walkingSpeed = app.MOVEMENT.speed
 
+  if (!camera) return
+
   /**
    * Automatic speed reduction
    */
-  velocity.x -= velocity.x * 10.0 * delta
-  velocity.z -= velocity.z * 10.0 * delta
+  //velocity.x -= velocity.x * 10.0 * delta
+  velocity.x = Math.abs(velocity.x) < 1 ? 0 : velocity.x - velocity.x * 10.0 * delta
+  //velocity.z -= velocity.z * 10.0 * delta
+  velocity.z = Math.abs(velocity.z) < 1 ? 0 : velocity.z - velocity.z * 10.0 * delta
   velocity.y -= 9.8 * 50 * delta // 100.0 = mass
 
   /**
@@ -148,6 +139,10 @@ function makeMovement() {
   if (intersections.length > 0 && velocity.y * delta < 1) {
     velocity.y = 0
     camera.position.y = intersections[0].point.y + 10.5
+    if (!app.MOVEMENT.canJump) {
+      currentStepCounts = 0
+      camera.playStep()
+    }
     app.MOVEMENT.canJump = true
   }
 
@@ -187,4 +182,20 @@ function makeMovement() {
   controls.moveRight(-velocity.x * delta)
   controls.moveForward(-velocity.z * delta)
   controls.getObject().position.y += velocity.y * delta
+
+  /**
+   * Camera step sound effect logic
+   */
+  if ((velocity.x !== 0 && velocity.y === 0) || (velocity.z !== 0 && velocity.y === 0)) {
+    if (stepThreshold <= currentStepCounts) {
+      camera?.playStep()
+      currentStepCounts = 0
+    }
+    currentStepCounts += delta
+  }
+
+  //Reset height if falling
+  if (controls.getObject().position.y < -500) {
+    controls.getObject().position.y = 500
+  }
 }

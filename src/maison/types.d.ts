@@ -17,7 +17,7 @@ interface MaisonApp {
     paused: ref<boolean>
     scene: THREE.Scene
     renderer: THREE.WebGLRenderer
-    camera: CustomCamera
+    camera: CustomCamera | null
     listener: THREE.AudioListener
     mouse: THREE.Vector2
   }
@@ -61,7 +61,7 @@ interface MaisonApp {
     inside: Array<PlanMesh>
     space_map: Map<number, Space>
   }
-  DIALOGUE: Ref<string>
+  DIALOGUE: Ref<[string, string]>
 }
 
 interface WallObject {

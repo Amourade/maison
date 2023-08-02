@@ -1,4 +1,3 @@
-import * as THREE from 'three'
 import { app } from '../app'
 import { SittingGirl } from './sittingGirl'
 import { config } from './paintings'

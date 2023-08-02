@@ -4,6 +4,8 @@ import { CustomCamera } from './controls/camera'
 //import { CameraActor } from '../actors/camera'
 
 export const init = () => {
+  THREE.ColorManagement.enabled = false
+
   //Scene
   const scene = new THREE.Scene()
 
@@ -15,22 +17,24 @@ export const init = () => {
   })
   renderer.setPixelRatio(window.devicePixelRatio)
   renderer.setSize(window.innerWidth, window.innerHeight)
-  //renderer.shadowMap.enabled = false
-  //renderer.shadowMap.type = THREE.VSMShadowMap
+  renderer.outputColorSpace = THREE.LinearSRGBColorSpace
   renderer.domElement.id = 'renderer'
-  //document.body.appendChild(renderer.domElement)
 
   //Clock
   const clock = new THREE.Clock()
 
   //Camera
-  //const camera = new CameraActor()
   const camera = new CustomCamera(
     45,
     window.innerWidth / window.innerHeight,
     0.01,
     3000,
-    new THREE.Vector3(-299, 10.5, -868)
+    //Basic
+    //new THREE.Vector3(-299, 10.5, -868)
+    //sittingGirl
+    new THREE.Vector3(-90, 10.5, 356)
+    //clown
+    //new THREE.Vector3(38.5, 76.5, 17)
   )
   camera.lookAt(new THREE.Vector3(0, 0, 0))
   scene.add(camera)
@@ -74,11 +78,11 @@ export const init = () => {
   scene.add(dirLight)
 
   //Fog
-  scene.fog = new THREE.FogExp2(0xa10e0e, 0.0005)
+  scene.fog = new THREE.FogExp2(0xffffff, 0.0001)
 
   //Controls
   const controls = new PointerLockControls(camera, document.body)
-  scene.add(controls.getObject())
+  //scene.add(controls.getObject())
 
   //Add to global variables
   return { scene, renderer, clock, camera, listener, controls }

@@ -156,8 +156,6 @@ export class FlowerActor extends THREE.Group {
         this.grid = Gridintersections[0].object
       }
 
-      console.log(Gridintersections)
-
       this.falling = false
       this.snapped = true
 
@@ -220,28 +218,21 @@ export class FlowerActor extends THREE.Group {
   }
 
   //Camera interactions
-  interact() {
-    console.log(this.heldBy)
+  interact(interactor: CustomCamera | MovingActor) {
+    if (this.held && this.heldBy && this.heldBy !== interactor) {
+      const holdingIndex = this.heldBy?.heldFlowers.findIndex((element) => element.id === this.id)
+      this.heldBy.heldFlowers.splice(holdingIndex, 1)
+      this.heldBy = interactor
+      interactor.heldFlowers.push(this)
+      return
+    }
     if (!this.held) {
       this.held = true
       this.planted = false
-      this.heldBy = app.SCENE.camera
+      this.heldBy = interactor
+      interactor.heldFlowers.push(this)
       this.snapped = false
       this.sounds.pluck.play()
-      return
-    }
-    if (this.heldBy instanceof CustomCamera) {
-      this.drop()
-      return
-    }
-    //Code flower stealing
-    if (this.held && this.heldBy) {
-      const holdingIndex = this.heldBy?.heldObjects.findIndex((element) => element.id === this.id)
-      this.heldBy.heldObjects.splice(holdingIndex, 1)
-      this.held = true
-      this.planted = false
-      this.heldBy = app.SCENE.camera
-      this.snapped = false
       return
     }
   }

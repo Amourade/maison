@@ -1,4 +1,3 @@
-import { onDeactivated } from 'vue'
 import { app } from '../app'
 import type { Flower } from '../nature/flower'
 import type { Sunflower } from '../nature/sunflower'
@@ -16,12 +15,19 @@ export const getRandomInsidePlan = () => {
 }
 
 export const getRandomFlower = () => {
-  let flower: Flower | Sunflower
-  let counter: number = 0
-  do {
-    flower = app.INTERACTIONS.flowers[Math.floor(Math.random() * app.INTERACTIONS.flowers.length)]
-    counter++
-  } while (flower.grid == undefined || counter < app.INTERACTIONS.flowers.length)
+  const flowers = app.INTERACTIONS.flowers.filter((value) => {
+    return value.grid && value.planted
+  })
 
-  return flower
+  return flowers.length ? flowers[Math.floor(Math.random() * flowers.length)] : false
+}
+
+export const getRandomUnplantedFlower = () => {
+  const unplantedFlowers = app.INTERACTIONS.flowers.filter((value) => {
+    return value.grid && !value.planted && !value.heldBy
+  })
+
+  return unplantedFlowers.length
+    ? unplantedFlowers[Math.floor(Math.random() * unplantedFlowers.length)]
+    : false
 }

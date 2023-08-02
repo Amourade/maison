@@ -41,7 +41,7 @@ function buildRoute(from: number, to: number, target: any = null, action: any = 
   if (!routes) throw new Error('Routes error')
 
   //const route = routes[Math.floor(Math.random() * routes.length)]
-  const route = routes[0]
+  const route = routes[Math.floor(Math.random() * routes.length)]
   const builtRoute: Array<{ coord: THREE.Vector3; object: any; action: any }> = []
 
   route.forEach((el: number, index: number, arr: Array<any>) => {

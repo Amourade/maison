@@ -1,12 +1,12 @@
 @font-face {
-  font-family: "Broken15";
-  src: url("./BROKEN15.TTF");
+  font-family: "Pangolin";
+  src: url("./Pangolin-Regular.ttf");
 }
 /* color palette from <https://github.com/vuejs/theme> */
 :root {
   --color-background: red;
 
-  --title-text: "Broken15"
+  --title-text: "Pangolin"
 }
 
 *,
@@ -31,4 +31,14 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+*{
+  
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }

@@ -1,14 +1,35 @@
 import * as THREE from 'three'
 import { app } from '../app'
-import face1 from '@/maison/assets/textures/face1.jpg'
-import face2 from '@/maison/assets/textures/face2.jpg'
-import face3 from '@/maison/assets/textures/face3.jpg'
+import face1 from '@/maison/assets/textures/heads/1.webp'
+import face2 from '@/maison/assets/textures/heads/2.webp'
+import face3 from '@/maison/assets/textures/heads/3.webp'
 import side from '@/maison/assets/textures/pilliers.jpg'
 import { parseImages } from '../scripts/parseAssets'
 import { secondFloorDimensions } from '../house/configs'
 import type { PlanMesh } from '../house/scripts/planMesh'
+import { CustomCamera } from '../controls/camera'
+import type { MovingActor } from './shared/movingActor'
 import { snapToGround } from './shared/snapToGround'
 //import { InteractionZone } from './shared/interactionZone'
+import spin from '@/maison/assets/sounds/heads/spin.mp3'
+import result1 from '@/maison/assets/sounds/heads/1.mp3'
+import result2 from '@/maison/assets/sounds/heads/2.mp3'
+import result3 from '@/maison/assets/sounds/heads/3.mp3'
+import { parseSounds } from '@/maison/scripts/parseAssets'
+
+const spinSFX = {
+  one: spin
+}
+
+const parsedSpinSFX = parseSounds(spinSFX)
+
+const resultsSfx = {
+  one: result3,
+  two: result2,
+  three: result1
+}
+
+const parsedResultsSfx = parseSounds(resultsSfx)
 
 const rawMaterials = {
   faceOne: face1,
@@ -38,9 +59,35 @@ export class RotatingHeads extends THREE.Group {
     0,
     20
   )
+  currentFaceIndex: number | null = null
+  sounds: { [key: string]: Array<THREE.PositionalAudio> } = { spin: [], results: [] }
 
   constructor() {
     super()
+
+    Object.keys(parsedSpinSFX).forEach((key) => {
+      if (parsedSpinSFX[key] instanceof AudioBuffer) {
+        const audio = new THREE.PositionalAudio(app.SCENE.listener)
+        audio.setBuffer(parsedSpinSFX[key])
+        audio.setRefDistance(20)
+        audio.loop = true
+        //this.add(this.sounds.open)
+        this.sounds.spin.push(audio)
+        this.add(audio)
+      }
+    })
+
+    Object.keys(parsedResultsSfx).forEach((key) => {
+      if (parsedResultsSfx[key] instanceof AudioBuffer) {
+        const audio = new THREE.PositionalAudio(app.SCENE.listener)
+        audio.setBuffer(parsedResultsSfx[key])
+        audio.setRefDistance(20)
+        audio.loop = false
+        //this.add(this.sounds.open)
+        this.sounds.results.push(audio)
+        this.add(audio)
+      }
+    })
 
     let face: THREE.Mesh
     const facesSize = 13
@@ -110,13 +157,6 @@ export class RotatingHeads extends THREE.Group {
 
     // Interaction Zone
 
-    /* = new InteractionZone(
-      new THREE.Vector2(10, 10),
-      new THREE.Vector3(0, -this.snapOffset + 5, 10)
-    )
-
-    this.add(this.interactionZone) */
-
     this.interactionZone = new THREE.Mesh(
       new THREE.PlaneGeometry(10, 10, 5, 5),
       new THREE.MeshBasicMaterial({
@@ -136,7 +176,7 @@ export class RotatingHeads extends THREE.Group {
     app.ANIMATED.push(this)
   }
 
-  snapToGround = () => {
+  snapToGround() {
     //Two ray casting, one for ground snapping and one for space grid detection
     this.position.y += 5
     this.groundRay.ray.origin.copy(this.position)
@@ -156,18 +196,26 @@ export class RotatingHeads extends THREE.Group {
     this.position.y -= 5
   }
 
-  interact = () => {
+  interact(interactor: CustomCamera | MovingActor) {
+    if (this.spinning && interactor instanceof CustomCamera) return
     this.spinning = true
-    this.refVelocity = Math.random() * 0.7 + 1
-    this.time = this.refVelocity * 100
+    this.refVelocity = interactor instanceof CustomCamera ? 0.01 : Math.random() * 0.7 + 1
+    this.time = interactor instanceof CustomCamera ? this.refVelocity : this.refVelocity * 100
     this.timeIncrement = 100 / this.time
     this.velocity = this.refVelocity
     this.goal = null
+    this.currentFaceIndex = null
+    this.sounds.spin[0].play()
   }
 
-  animate = () => {
-    //this.interactionZone.findGrid()
-    if (this.spinning === false) return
+  animate() {
+    if (!this.spinning) return
+
+    this.velocity > 1
+      ? this.sounds.spin[0].setPlaybackRate(1)
+      : this.velocity < 0.2
+      ? this.sounds.spin[0].setPlaybackRate(0.2)
+      : this.sounds.spin[0].setPlaybackRate(Math.abs(this.velocity))
 
     if (this.velocity <= 0.005 && this.goal == null) {
       const needle = this.movingParts.rotation.x
@@ -186,13 +234,26 @@ export class RotatingHeads extends THREE.Group {
     }
 
     const angleDiff = this.movingParts.rotation.x - this.goal
+    //We are done spinning
     if (Math.abs(angleDiff) <= 0.005) {
       this.movingParts.rotation.x = this.goal
       this.spinning = false
+      this.currentFaceIndex = this.facePosition.findIndex((value) => value === this.goal)
+      this.sounds.spin[0].stop()
+      this.stopSounds()
+      this.sounds.results[Math.floor(Math.random() * this.sounds.results.length)].play()
       return
     }
 
     //We spin
     this.movingParts.rotateX(this.velocity)
+  }
+
+  stopSounds() {
+    for (const key in this.sounds) {
+      this.sounds[key].forEach((sound) => {
+        sound.stop()
+      })
+    }
   }
 }

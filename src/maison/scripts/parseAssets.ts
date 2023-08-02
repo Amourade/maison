@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { app } from '@/maison/app'
 import { CustomMaterial } from '../house/scripts/customMaterial'
+import type { MatInfo, MatsList, ParsedMatsList, ParsedSoundsList, SoundsList } from '../types'
 
 export const findMaterials = (src: object) => {
   Object.keys(src).forEach((key: string) => {
@@ -55,11 +56,11 @@ export const createMaterials = (src: any): ParsedMatsList => {
 export const parseSounds = (sounds: SoundsList) => {
   const parsed: ParsedSoundsList = {}
   Object.keys(sounds).forEach((key: string) => {
-    parsed[key] = new THREE.AudioLoader(app.LOADER).load(sounds[key], (buffer) => {
+    new THREE.AudioLoader(app.LOADER).load(sounds[key], (buffer) => {
       parsed[key] = buffer
     })
+    //parsed[key] =
   })
-
   return parsed
 }
 

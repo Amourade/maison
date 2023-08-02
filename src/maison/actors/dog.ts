@@ -10,7 +10,9 @@ import step3 from '@/maison/assets/sounds/dog/steps/3.mp3'
 import step4 from '@/maison/assets/sounds/dog/steps/4.mp3'
 import step5 from '@/maison/assets/sounds/dog/steps/5.mp3'
 import step6 from '@/maison/assets/sounds/dog/steps/6.mp3'
+import sleep1 from '@/maison/assets/sounds/dog/sleep.mp3'
 import { parseSounds } from '@/maison/scripts/parseAssets'
+import type { CustomCamera } from '../controls/camera'
 
 const steps = {
   one: step1,
@@ -22,6 +24,12 @@ const steps = {
 }
 
 const parsedSteps = parseSounds(steps)
+
+const sleep = {
+  one: sleep1
+}
+
+const parsedSleep = parseSounds(sleep)
 
 let model: THREE.Group
 
@@ -49,6 +57,19 @@ export class Dog extends MovingActor {
   constructor() {
     super(model, 0, parsedSteps)
 
+    Object.keys(parsedSleep).forEach((key) => {
+      if (parsedSleep[key] instanceof AudioBuffer) {
+        const audio = new THREE.PositionalAudio(app.SCENE.listener)
+        audio.setBuffer(parsedSleep[key])
+        audio.setRefDistance(10)
+        audio.setVolume(1)
+        audio.loop = true
+        //this.add(this.sounds.open)
+        this.sounds.talk.push(audio)
+        this.add(audio)
+      }
+    })
+
     this.scaleOffset = 1
     this.scaleOffsetFactor = 0.0002
 
@@ -63,17 +84,14 @@ export class Dog extends MovingActor {
     this.openFace!.visible = false
     this.body = this.getObjectByName('corps')
     this.closedFace = this.getObjectByName('face_ferme')
+
+    this.sounds.talk[0].play()
   }
 
-  interact = () => {
-    this.openFace!.visible = !this.openFace!.visible
-    this.closedFace!.visible = !this.closedFace!.visible
-    //this.getRandomDestination()
-    /* const flower =
-      app.INTERACTIONS.flowers[Math.floor(Math.random() * app.INTERACTIONS.flowers.length)]
-
-    if (flower.grid && flower.grid.space) this.getDestination(flower.grid.space.id, flower, 'grab')
-    this.goToActor(flower, 'grab') */
+  interact(interactor: CustomCamera | MovingActor) {
+    this.sounds.talk[0].stop()
+    this.openFace!.visible = true
+    this.closedFace!.visible = false
   }
 
   iddleAnimation() {
@@ -87,8 +105,14 @@ export class Dog extends MovingActor {
 
   animate() {
     if (!this.snapped) this.snapToGround()
+    if (!app.SCENE.camera) return
     this.iddleAnimation()
-    if (this.walking) this.walkToObjective()
-    if (this.interacting) this.interactAnimation()
+    if (this.openFace!.visible) {
+      if (app.SCENE.camera.position.distanceTo(this.position) > 200) {
+        this.sounds.talk[0].play()
+        this.openFace!.visible = false
+        this.closedFace!.visible = true
+      }
+    }
   }
 }

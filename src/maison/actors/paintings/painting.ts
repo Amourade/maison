@@ -1,6 +1,27 @@
 import { app } from '@/maison/app'
-import { Doors, LeftDoor, RightDoor } from '@/maison/house/scripts/doors'
+import { CustomCamera } from '@/maison/controls/camera'
+import type { MovingActor } from '../shared/movingActor'
 import * as THREE from 'three'
+
+import grabSFX from '@/maison/assets/sounds/paintings/take.wav'
+import placeSFX from '@/maison/assets/sounds/paintings/place.mp3'
+import dropSFX from '@/maison/assets/sounds/paintings/drop.mp3'
+import { parseSounds } from '@/maison/scripts/parseAssets'
+
+const grab = {
+  one: grabSFX
+}
+const parsedGrabSFX = parseSounds(grab)
+
+const place = {
+  one: placeSFX
+}
+const parsedPlaceSFX = parseSounds(place)
+
+const drop = {
+  one: dropSFX
+}
+const parsedDropSFX = parseSounds(drop)
 
 export class Painting extends THREE.Mesh {
   raycaster: THREE.Raycaster = new THREE.Raycaster(
@@ -10,12 +31,14 @@ export class Painting extends THREE.Mesh {
     20
   )
   held: boolean = false
+  heldBy!: CustomCamera | MovingActor
   snapped: boolean = false
   falling: boolean = false
   fallingSpeed: number = 5
   heldRotation: number = 0
   heldRotationIncrement: number = 0.005
   dimensions!: any
+  sounds: { [key: string]: Array<THREE.PositionalAudio> } = { grab: [], drop: [], place: [] }
 
   constructor(
     material: any,
@@ -29,52 +52,107 @@ export class Painting extends THREE.Mesh {
     this.position.copy(position)
     this.dimensions = dimensions
 
+    //Parse grab SFX
+    Object.keys(parsedGrabSFX).forEach((key) => {
+      if (parsedGrabSFX[key] instanceof AudioBuffer) {
+        const audio = new THREE.PositionalAudio(app.SCENE.listener)
+        audio.setBuffer(parsedGrabSFX[key])
+        audio.setRefDistance(10)
+        audio.loop = false
+        this.sounds.grab.push(audio)
+        this.add(audio)
+      }
+    })
+
+    //Parse place sfx
+    Object.keys(parsedPlaceSFX).forEach((key) => {
+      if (parsedPlaceSFX[key] instanceof AudioBuffer) {
+        const audio = new THREE.PositionalAudio(app.SCENE.listener)
+        audio.setBuffer(parsedPlaceSFX[key])
+        audio.setRefDistance(10)
+        audio.loop = false
+        this.sounds.place.push(audio)
+        this.add(audio)
+      }
+    })
+
+    //Parse drop sfx
+    Object.keys(parsedDropSFX).forEach((key) => {
+      if (parsedDropSFX[key] instanceof AudioBuffer) {
+        const audio = new THREE.PositionalAudio(app.SCENE.listener)
+        audio.setBuffer(parsedDropSFX[key])
+        audio.setRefDistance(20)
+        audio.loop = false
+        this.sounds.drop.push(audio)
+        this.add(audio)
+      }
+    })
+
     app.INTERACTIONS.interactives.push(this)
     app.INTERACTIONS.paintings.push(this)
     app.ANIMATED.push(this)
   }
 
-  interact = () => {
-    this.held = !this.held
+  interact(interactor: CustomCamera | MovingActor) {
+    if (!this.held) {
+      this.stopSounds()
+      this.sounds.grab[0].play()
+    }
+    this.held = true
+    interactor.heldPainting = this
+    this.heldBy = interactor
+  }
+
+  drop() {
+    this.held = false
     this.fallingSpeed = 5
   }
 
-  animate = () => {
+  animate() {
     if (!this.held) {
       if (!this.snapped) this.snap()
       return
     }
+    if (this.heldBy instanceof CustomCamera) {
+      const vector = new THREE.Vector3(0, 0, -1)
+      vector.applyEuler(this.heldBy.rotation)
+      vector.setLength(11)
 
-    const vector = new THREE.Vector3(0, 0, -1)
-    vector.applyEuler(app.SCENE.camera.rotation)
-    vector.setLength(11)
+      let scalingFactor: number
+      if (this.dimensions.x < this.dimensions.y) {
+        scalingFactor = 6 / this.dimensions.y
+      } else {
+        scalingFactor = 6 / this.dimensions.x
+      }
+      this.scale.set(scalingFactor, scalingFactor, scalingFactor)
+      vector.add(this.heldBy.position)
 
-    let scalingFactor: number
-    //regle de troie pour une largeur de 5.5 unitées;
-    if (this.dimensions.x < this.dimensions.y) {
-      scalingFactor = 6 / this.dimensions.y
-    } else {
-      scalingFactor = 6 / this.dimensions.x
+      this.position.set(vector.x, vector.y, vector.z)
+
+      this.lookAt(this.heldBy.position)
+      this.rotateZ(this.heldRotation)
+      this.rotateX(-this.heldRotation)
+
+      if (this.heldRotation >= 0.15) this.heldRotationIncrement = -this.heldRotationIncrement
+
+      if (this.heldRotation <= -0.15) this.heldRotationIncrement = -this.heldRotationIncrement
+
+      this.heldRotation += this.heldRotationIncrement
+      this.snapped = false
+
+      return
     }
-    this.scale.set(scalingFactor, scalingFactor, scalingFactor)
-    vector.add(app.SCENE.camera.position)
 
-    this.position.set(vector.x, vector.y, vector.z)
+    //Moving actor holding behavior
+    this.heldBy.grabPoint.getWorldPosition(this.position)
 
-    this.lookAt(app.SCENE.camera.position)
-    this.rotateZ(this.heldRotation)
-    this.rotateX(-this.heldRotation)
+    this.scale.set(1, 1, 1)
 
-    if (this.heldRotation >= 0.15) this.heldRotationIncrement = -this.heldRotationIncrement
-
-    if (this.heldRotation <= -0.15) this.heldRotationIncrement = -this.heldRotationIncrement
-
-    this.heldRotation += this.heldRotationIncrement
-
+    this.lookAt(this.heldBy.position.x, this.position.y, this.heldBy.position.z)
     this.snapped = false
   }
 
-  snap = () => {
+  snap() {
     //snap to wall if close enough or fall on floor;
 
     //something like if a ray from the current position hits a wall in less than 5 units it snaps to it otherwise it falls
@@ -102,6 +180,8 @@ export class Painting extends THREE.Mesh {
       this.position.y = intersections[0].point.y
       this.falling = false
       this.snapped = true
+      this.stopSounds()
+      this.sounds.drop[0].play()
 
       return
     }
@@ -148,6 +228,8 @@ export class Painting extends THREE.Mesh {
       }
 
       this.snapped = true
+      this.stopSounds()
+      this.sounds.place[0].play()
 
       return
     }
@@ -155,5 +237,13 @@ export class Painting extends THREE.Mesh {
     //Fall to the ground
     this.position.y += 2
     this.falling = true
+  }
+
+  stopSounds() {
+    for (const key in this.sounds) {
+      this.sounds[key].forEach((sound) => {
+        sound.stop()
+      })
+    }
   }
 }

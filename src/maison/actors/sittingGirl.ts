@@ -12,8 +12,10 @@ import step5 from '@/maison/assets/sounds/sittingGirl/steps/5.mp3'
 import step6 from '@/maison/assets/sounds/sittingGirl/steps/6.mp3'
 import step7 from '@/maison/assets/sounds/sittingGirl/steps/7.mp3'
 import step8 from '@/maison/assets/sounds/sittingGirl/steps/8.mp3'
+import talk1 from '@/maison/assets/sounds/sittingGirl/talk.wav'
 import { parseSounds } from '@/maison/scripts/parseAssets'
-import { getRandomFlower } from '../scripts/plans'
+import { getRandomFlower, getRandomUnplantedFlower } from '../scripts/plans'
+import type { CustomCamera } from '../controls/camera'
 
 const steps = {
   one: step1,
@@ -27,6 +29,12 @@ const steps = {
 }
 
 const parsedSteps = parseSounds(steps)
+
+const talks = {
+  one: talk1
+}
+
+const parsedTalks = parseSounds(talks)
 
 let model: THREE.Group
 
@@ -51,54 +59,85 @@ export class SittingGirl extends MovingActor {
   constructor() {
     super(model, 0, parsedSteps)
 
+    this.dialogueCutoffRadius = 100
+
+    Object.keys(parsedTalks).forEach((key) => {
+      if (parsedTalks[key] instanceof AudioBuffer) {
+        const audio = new THREE.PositionalAudio(app.SCENE.listener)
+        audio.setBuffer(parsedTalks[key])
+        audio.setRefDistance(10)
+        audio.setVolume(0.6)
+        audio.loop = true
+        //this.add(this.sounds.open)
+        this.sounds.talk.push(audio)
+        this.add(audio)
+      }
+    })
+
     this.setInitial(new THREE.Vector3(-146, 10, 383), new THREE.Vector3(3.5, 3.5, 3.5), Math.PI / 2)
 
     this.makeGrabArea(new THREE.Vector3(0, 2, 2))
+
+    this.dialogueLength = 4
+    this.name = 'sittingGirl'
 
     app.INTERACTIONS.interactives.push(this)
     app.ANIMATED.push(this)
   }
 
-  interact = () => {
-    this.decideAction()
+  interact(interactor: CustomCamera | MovingActor) {
+    this.sounds.talk[0].play()
+
+    if (interactor.heldFlowers.length) {
+      return this.talkFlowers(interactor)
+    }
+
+    if (interactor.heldPainting) {
+      return this.talk('painting')
+    } else {
+      return this.talk('regular')
+    }
+  }
+
+  talkFlowers(from: CustomCamera | MovingActor) {
+    const flowersToTake = [...from.heldFlowers]
+    this.talking = true
+    app.DIALOGUE.value = [this.name, `flowers[0]`]
+    for (let index = 0; index < flowersToTake.length; index++) {
+      flowersToTake[index].interact(this)
+    }
+    from.heldFlowers = []
+    this.startWait(1, () => {
+      this.stopTalk()
+    })
   }
 
   decideAction() {
-    /* if (Math.random() < 0.15) {
-      this.getDestination(2)
+    if (!this.holding) {
+      //Get any non planted flowers
+      const unplantedFlower = getRandomUnplantedFlower()
+      if (unplantedFlower) return this.goToActor(unplantedFlower, 'grab')
+
+      //Otherwise, move randomly || pick up planted flower
+      const flower = getRandomFlower()
+      Math.random() < 0.7 && flower ? this.goToActor(flower, 'grab') : this.getRandomDestination()
 
       return
     }
 
-    if (Math.random() < 0.1) {
-      setTimeout(() => {}, Math.random() * 10000)
+    if (this.heldFlowers.length) {
+      //Maybe pick fallen flower
+      const unplantedFlower = getRandomUnplantedFlower()
+      if (Math.random() < 0.6 && unplantedFlower) return this.goToActor(unplantedFlower, 'grab')
+
+      //Slightly maybe pick a planted flower
+      const flower = getRandomFlower()
+      if (Math.random() < 0.2 && flower) return this.goToActor(flower, 'grab')
+
+      //Go plant a flower
+      this.getRandomDestination('plant')
 
       return
-    } */
-
-    if (!this.holding /*  || Math.random() < 0.5 */) {
-      const flower = getRandomFlower()
-      flower.grid ? this.goToActor(flower, 'grab') : this.getRandomDestination()
-      //this.goToActor(flower, 'grab')
-
-      return
-    }
-
-    if (this.holding) {
-      //if (Math.random() > 0.2) {
-      const flower = getRandomFlower()
-      flower.grid ? this.goToActor(flower, 'grab') : this.getRandomDestination()
-      //this.goToActor(flower, 'grab')
-
-      return /* 
-      Math.random() < 0.9
-        ? this.getRandomInsideDestination('plant')
-        : this.getRandomDestination('plant')
-
-      return */
-      //}
-
-      //this.getRandomDestination()
     }
   }
 
@@ -110,9 +149,36 @@ export class SittingGirl extends MovingActor {
   }
 
   animate() {
+    //snap
     if (!this.snapped) this.snapToGround()
-    this.iddleAnimation()
-    if (this.walking) this.walkToObjective()
-    if (this.interacting) this.interactAnimation()
+    if (!app.SCENE.camera) return
+    //looks at me talk and return
+    if (this.talking) {
+      this.lookAt(app.SCENE.camera.position.x, this.position.y, app.SCENE.camera.position.z)
+      if (!this.waiting) return this.talkAnimation()
+      this.talkAnimation()
+    }
+    //idle if not talking
+    if (!this.talking) this.iddleAnimation()
+    //walk and return
+    if (this.walking) return this.walkToObjective()
+    //interact and return
+    if (this.interacting) return this.interactAnimation()
+
+    //Wait if we have some wait thing
+    if (this.waiting) return this.wait()
+
+    //If nothing is happening, add delta for eventual decision making
+    this.currentDelta += app.SCENE.delta
+
+    //Return if the threshold for decision is not reached
+    if (this.currentDelta < this.decisionDelta) return
+
+    //Decide flowering action
+    this.decideAction()
+
+    //Get new decision delta
+    this.currentDelta = 0
+    this.decisionDelta = Math.random() * 15
   }
 }

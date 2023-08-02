@@ -241,6 +241,7 @@ export const flowers = [
     mat.color = new THREE.Color(0xbf9968)
 
     mesh = new THREE.Mesh(new THREE.CylinderGeometry(2, 2, 0.5, 15, 1), mat)
+
     flowerTop.add(mesh)
 
     //Pétale

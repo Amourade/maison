@@ -18,10 +18,13 @@ div {
 
   padding: 30px;
   border-radius: 3px;
-  font-size: 2.5em;
+  font-size: 2em;
   text-transform: uppercase;
   text-align: center;
 
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
   p,
   li {
     font-size: 0.8em;
