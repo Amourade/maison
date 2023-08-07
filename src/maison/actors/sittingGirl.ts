@@ -66,7 +66,7 @@ export class SittingGirl extends MovingActor {
         const audio = new THREE.PositionalAudio(app.SCENE.listener)
         audio.setBuffer(parsedTalks[key])
         audio.setRefDistance(10)
-        audio.setVolume(0.6)
+        audio.setVolume(0.85)
         audio.loop = true
         //this.add(this.sounds.open)
         this.sounds.talk.push(audio)

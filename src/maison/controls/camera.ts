@@ -46,7 +46,7 @@ export class CustomCamera extends THREE.PerspectiveCamera {
         const audio = new THREE.PositionalAudio(app.SCENE.listener)
         audio.setBuffer(this.parsedSteps[key])
         audio.setRefDistance(10)
-        audio.setVolume(1)
+        audio.setVolume(3)
         audio.loop = false
         //this.add(this.sounds.open)
         this.sounds.steps.push(audio)

@@ -71,6 +71,7 @@ function crook() {
       <h2>{{ $t('controls') }}</h2>
       <div class="controls">
         <p>{{ $t('movement') }}</p>
+        <p>{{ $t('espace') }}</p>
         <p>{{ $t('click') }}</p>
         <p>{{ $t('putFlower') }}</p>
         <p>{{ $t('putPainting') }}</p>

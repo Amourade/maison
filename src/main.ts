@@ -12,6 +12,7 @@ const messages = {
     click: 'left click: interaction',
     putFlower: 'E: drop a flower',
     putPainting: 'Q: put a painting',
+    espace: 'space: jump',
     start: 'press any key or click here to start',
     sittingGirl: {
       regular: [
@@ -45,6 +46,7 @@ const messages = {
     click: 'clique gauche: interaction',
     putFlower: 'E: déposer une fleur',
     putPainting: 'Q: poser une peinture',
+    espace: 'espace: sauter',
     start: 'appuyer sur une touche ou cliquer sur la pancarte pour commencer',
     sittingGirl: {
       regular: [

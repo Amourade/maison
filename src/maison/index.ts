@@ -43,11 +43,13 @@ export const maisonApp = app
 export const lock = () => {
   app.CONTROLS.lock()
   app.SCENE.paused.value = false
+  app.SCENE.bg?.play()
 }
 
 export const unlock = () => {
   app.CONTROLS.unlock()
   app.SCENE.paused.value = true
+  app.SCENE.bg?.pause()
 }
 
 function initCamera() {
@@ -58,9 +60,9 @@ function initCamera() {
     0.01,
     3000,
     //Basic
-    //new THREE.Vector3(-299, 10.5, -868)
+    new THREE.Vector3(-299, 10.5, -868)
     //sittingGirl
-    new THREE.Vector3(-90, 10.5, 356)
+    //new THREE.Vector3(-90, 10.5, 356)
     //clown
     //new THREE.Vector3(38.5, 76.5, 17)
   )

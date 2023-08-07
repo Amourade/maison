@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { ref } from 'vue'
 import { EventsMaster } from './eventsMaster'
 import type { MaisonApp } from './types'
+import bgMusic from './assets/sounds/bg.mp3'
 
 /**
  * BAD should have all these be different variables that are exported sepratlky depending on their concerns
@@ -25,7 +26,8 @@ export const app: MaisonApp = {
     }),
     camera: null,
     listener: new THREE.AudioListener(),
-    mouse: new THREE.Vector2(0, 0)
+    mouse: new THREE.Vector2(0, 0),
+    bg: null
   },
   DEBUG: {
     general: false,
@@ -124,3 +126,11 @@ app.SCENE.scene.add(dirLight)
 
 //Fog
 app.SCENE.scene.fog = new THREE.FogExp2(0xffffff, 0.0001)
+
+//Load background music
+new THREE.AudioLoader(app.LOADER).load(bgMusic, (buffer) => {
+  app.SCENE.bg = new THREE.Audio(app.SCENE.listener)
+  app.SCENE.bg.buffer = buffer
+  app.SCENE.bg.setVolume(0.75)
+  app.SCENE.bg.loop = true
+})

@@ -20,6 +20,7 @@ interface MaisonApp {
     camera: CustomCamera | null
     listener: THREE.AudioListener
     mouse: THREE.Vector2
+    bg: THREE.Audio | null
   }
   DEBUG: {
     general: boolean
