@@ -5,40 +5,6 @@ import { parseImages, createMaterials } from '@/maison/scripts/parseAssets'
 import woodenPost from '@/maison/assets/textures/poteauBois.jpg'
 import { degToRad } from 'three/src/math/MathUtils'
 
-const url = 'https://directus.antoinetheriault.com'
-const client = createDirectus(url).with(rest())
-
-const files = await client.request(
-  readFiles({
-    filter: {
-      folder: {
-        _eq: '19274e41-2b08-4cb6-bc5f-c6c97363fd13'
-      }
-    },
-    limit: 100
-  })
-)
-
-shuffleArray(files)
-
-const toLoad: { [key: string]: string } = {
-  wood: woodenPost
-}
-let size = 0
-const maxImages = 30
-
-files.forEach(async (file, index) => {
-  if (index >= maxImages) return
-  toLoad[index.toString()] =
-    'https://directus.antoinetheriault.com/assets/' +
-    file.id +
-    '?fit=inside&height=200&width=200&quality=75'
-
-  size++
-})
-
-const loadedTextures = parseImages(toLoad)
-
 class billboard extends THREE.Group {
   constructor() {
     super()
@@ -49,7 +15,40 @@ class billboard extends THREE.Group {
   }
 }
 
-export const init = () => {
+export const init = async () => {
+  const url = 'https://directus.antoinetheriault.com'
+  const client = createDirectus(url).with(rest())
+
+  const files = await client.request(
+    readFiles({
+      filter: {
+        folder: {
+          _eq: '19274e41-2b08-4cb6-bc5f-c6c97363fd13'
+        }
+      },
+      limit: 100
+    })
+  )
+
+  shuffleArray(files)
+
+  const toLoad: { [key: string]: string } = {
+    wood: woodenPost
+  }
+  let size = 0
+  const maxImages = 30
+
+  files.forEach(async (file, index) => {
+    if (index >= maxImages) return
+    toLoad[index.toString()] =
+      'https://directus.antoinetheriault.com/assets/' +
+      file.id +
+      '?fit=inside&height=200&width=200&quality=75'
+
+    size++
+  })
+
+  const loadedTextures = parseImages(toLoad)
   const billboardObject = new billboard()
 
   const panelWidth = 60
@@ -84,7 +83,6 @@ export const init = () => {
   }
 
   //PICTURES
-  console.log(size)
   for (let i = 0; i < size; i++) {
     const positionIndex = Math.floor(Math.random() * positions.length)
 
@@ -115,7 +113,12 @@ export const init = () => {
   billboardObject.add(mesh)
 
   app.INTERACTIONS.interactives.push(billboardObject)
-  return billboardObject
+
+  billboardObject.position.set(261, 20, -669)
+  billboardObject.rotateOnAxis(new THREE.Vector3(0, 1, 0), degToRad(180))
+  app.SCENE.scene.add(billboardObject)
+
+  return true
 }
 
 function shuffleArray(arr: Array<any>) {

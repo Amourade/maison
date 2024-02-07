@@ -1,4 +1,3 @@
-import * as THREE from 'three'
 import { app } from '../app'
 import * as firstFloor from './configs/first-floor'
 import * as entranceRight from './configs/first-floor/rooms/entranceRight'
@@ -17,7 +16,6 @@ import { gardenPlan } from './maps/garden'
 import { outsidePlan } from './maps/outside'
 import { makeGlobalMap } from './scripts/makeGlobalMap'
 import { secondFloorPlan } from './maps/secondFloor'
-import { init as initBillboard } from './billboard'
 import type { RoomConfig } from '../types'
 import { degToRad } from 'three/src/math/MathUtils'
 
@@ -52,9 +50,4 @@ export const init = function () {
   addGeomToArrays(houseGeometry)
   houseGeometry.updateWorldMatrix(true, true)
   app.SCENE.scene.add(houseGeometry)
-
-  const billboard = initBillboard()
-  billboard.position.set(261, 20, -669)
-  billboard.rotateOnAxis(new THREE.Vector3(0, 1, 0), degToRad(180))
-  app.SCENE.scene.add(billboard)
 }

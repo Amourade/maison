@@ -7,14 +7,14 @@ import { init as initActors } from './actors'
 import { animate } from './animate'
 import { CustomCamera } from './controls/camera'
 import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls'
+import { init as initBillboard } from './house/billboard'
 
 export const loader = 'loading'
 
-export const setup = (): {
-  DOMElement: HTMLCanvasElement | undefined
-} => {
+export const setup = () => {
   initCamera()
   initControls()
+  initBillboard()
 
   app.LOADER.onProgress = (url: string, itemsLoaded: number, itemsTotal: number) => {
     app.LOADING_PERCENT.value = Math.floor((itemsLoaded / itemsTotal) * 100)
@@ -24,7 +24,7 @@ export const setup = (): {
     //littleTimeout to fix something i have no clue
     //how to fix otherwise
     //fingers crossed
-    setTimeout(() => {
+    setTimeout(async () => {
       app.SCENE.camera?.initSounds()
       initHouse()
       initNature()
