@@ -33,6 +33,7 @@ interface MaisonApp {
   LOADED: Ref<boolean>
   EVENTS_MASTER: EventsMaster
   CONTROLS: PointerLockControls
+  SHOWALLPICTURES: ref<boolean>
   MOVEMENT: {
     speed: number
     direction: THREE.Vector3
@@ -61,6 +62,12 @@ interface MaisonApp {
     outside: Array<PlanMesh>
     inside: Array<PlanMesh>
     space_map: Map<number, Space>
+  }
+  PICTURE: {
+    taken: ref<boolean>
+    taking: ref<boolean>
+    uploaded: ref<boolean>
+    image: ref<Blob | undefined>
   }
   DIALOGUE: Ref<[string, string]>
 }

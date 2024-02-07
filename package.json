@@ -12,7 +12,9 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@directus/sdk": "^15.0.0",
     "@egjs/hammerjs": "^2.0.0",
+    "@vueuse/core": "^10.7.2",
     "component-emitter": "^1.3.0",
     "keycharm": "^0.4.0",
     "three": "^0.154.0",

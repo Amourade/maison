@@ -13,7 +13,7 @@ export const animate = () => {
 }
 
 export const onMouseClick = (e: MouseEvent) => {
-  e.preventDefault()
+  //e.preventDefault()
 
   if (app.CONTROLS.isLocked && app.INTERACTIONS.INTERSECTED.value) {
     app.SCENE.camera?.interact()

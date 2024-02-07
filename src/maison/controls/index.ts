@@ -1,5 +1,6 @@
 import { app } from '../app'
 import { onMouseClick, onMouseMove } from './logic'
+import { takePicture } from '../pictureTaker'
 
 export const init = () => {
   const onKeyDown = function (event: KeyboardEvent) {
@@ -35,6 +36,10 @@ export const init = () => {
 
       case 'KeyQ': //Q
         app.SCENE.camera?.dropPainting()
+        break
+
+      case 'KeyP': //P
+        takePicture()
         break
     }
   }

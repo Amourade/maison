@@ -60,7 +60,9 @@ function initCamera() {
     0.01,
     3000,
     //Basic
-    new THREE.Vector3(-299, 10.5, -868)
+    //new THREE.Vector3(-299, 10.5, -868)
+    //billboard
+    new THREE.Vector3(273, 10.5, -894)
     //sittingGirl
     //new THREE.Vector3(-90, 10.5, 356)
     //clown

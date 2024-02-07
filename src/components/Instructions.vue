@@ -1,18 +1,25 @@
 <script setup lang="ts">
-import { onMounted, ref, type Ref } from 'vue'
+import { computed, onMounted, ref, type Ref } from 'vue'
 import * as THREE from 'three'
 import { lock, maisonApp } from '@/maison'
 import InterfaceHolder from './InterfaceHolder.vue'
 import mask from '@/assets/mask.webp'
 import noMask from '@/assets/nomask.webp'
 import { useI18n } from 'vue-i18n'
+import { app } from '@/maison/app'
+
+defineEmits(['openPhoto'])
 
 const { locale } = useI18n()
 
 const paused: Ref<boolean> = maisonApp.SCENE.paused
 
+const imgUrl = computed(() => {
+  return URL.createObjectURL(app.PICTURE.image.value)
+})
+
 const lockCursor = () => {
-  if (maisonApp.LOADED.value) {
+  if (maisonApp.LOADED.value && maisonApp.SCENE.paused.value) {
     lock()
   }
 }
@@ -74,6 +81,7 @@ function crook() {
         <p>{{ $t('espace') }}</p>
         <p>{{ $t('click') }}</p>
         <p>{{ $t('putFlower') }}</p>
+        <p :class="{ done: app.PICTURE.taken.value }">{{ $t('takePicture') }}</p>
         <p>{{ $t('putPainting') }}</p>
       </div>
       <p>{{ $t('start') }}</p>
@@ -87,6 +95,9 @@ function crook() {
     >
       <span :class="{ selected: $i18n.locale === 'fr' }">FR</span>
       <span :class="{ selected: $i18n.locale === 'en' }">EN</span>
+    </div>
+    <div class="photo" v-if="app.PICTURE.taken.value">
+      <img @click="$emit('openPhoto')" :src="imgUrl" />
     </div>
   </div>
 </template>
@@ -121,6 +132,33 @@ function crook() {
     );
 }
 
+.photo {
+  position: absolute;
+  top: 215px;
+  right: 50px;
+
+  transform: rotate(2deg);
+
+  transition: transform 0.5s;
+
+  &:hover {
+    transform: rotate(0deg);
+  }
+
+  img {
+    max-width: 200px;
+    max-height: 200px;
+    //border-radius: 4px;
+    padding: 3px 3px 6px 3px;
+    background: white;
+    box-shadow: 2px 2px 5px 0px rgba(0, 0, 0, 0.6);
+    width: auto;
+    height: auto;
+
+    cursor: pointer;
+  }
+}
+
 h1,
 .lang {
   padding: 10px 20px;
@@ -136,8 +174,6 @@ h1,
 
   transform: rotate(2deg);
 
-  //transition: transform 0.5s linear;
-
   &:nth-child(2n) {
     transform: rotate(-2deg);
   }
@@ -151,6 +187,10 @@ h1,
   display: flex;
   flex-direction: column;
   gap: 15px;
+
+  .done {
+    text-decoration: line-through;
+  }
 }
 
 .lang {
@@ -245,6 +285,10 @@ h1,
     top: 50%;
     transform: translate(-50%, -50%) rotate(45deg);
     opacity: 0;
+
+    * {
+      cursor: default !important;
+    }
   }
 }
 </style>

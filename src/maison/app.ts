@@ -40,6 +40,7 @@ export const app: MaisonApp = {
   LOADED: ref<boolean>(false),
   EVENTS_MASTER: new EventsMaster(),
   CONTROLS: null,
+  SHOWALLPICTURES: ref<boolean>(false),
   MOVEMENT: {
     speed: 700,
     direction: new THREE.Vector3(),
@@ -77,6 +78,12 @@ export const app: MaisonApp = {
     outside: [],
     inside: [],
     space_map: new Map()
+  },
+  PICTURE: {
+    taken: ref<boolean>(false),
+    taking: ref<boolean>(false),
+    uploaded: ref<boolean>(false),
+    image: ref<Blob | undefined>(undefined)
   },
   DIALOGUE: ref<[string, string]>(['', ''])
 }
