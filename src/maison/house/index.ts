@@ -17,7 +17,6 @@ import { outsidePlan } from './maps/outside'
 import { makeGlobalMap } from './scripts/makeGlobalMap'
 import { secondFloorPlan } from './maps/secondFloor'
 import type { RoomConfig } from '../types'
-import { degToRad } from 'three/src/math/MathUtils'
 
 const makeRoom = (config: RoomConfig, geometry: THREE.Group) => {
   config.walls.forEach((element) => {
